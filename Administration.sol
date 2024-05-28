@@ -129,7 +129,7 @@ contract Administration {
         emit ProposalExecuted(proposal.hash);
     }
 
-    function updateCurator(address curator, uint256 weight) public onlyCurator {
+    function updateCurator(address curator, uint256 weight) internal {
         require(weight <= maxWeight, "Weight exceeds max weight");
         if (weight == 0) {
             isCurator[curator] = false;
