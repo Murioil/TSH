@@ -8,7 +8,7 @@ interface TSHDATA {
     function pauseContract(uint duration) external returns (bool);
 }
 
-contract Administration is IAdministration {
+contract Administration {
     string public constant name = "Coin Administration";
     string public version = "1";
 
@@ -34,7 +34,7 @@ contract Administration is IAdministration {
     mapping(address => bool) public isCurator;
     mapping(address => uint256) public myWeight;
     mapping(bytes32 => uint256) public proposalIndex; // map proposal hash to index in proposals array
-    mapping(bytes32 => mapping(address => bool) public hasVoted;
+    mapping(bytes32 => mapping(address => bool)) public hasVoted;
 
     address[] public curators;
     Proposal[] public proposals;
@@ -89,8 +89,8 @@ contract Administration is IAdministration {
         proposals.push(newProposal);
         uint256 propIndex = proposals.length - 1;
         proposalIndex[hash] = propIndex;
-        if (proposal.weight >= (totalVotes * voteThreshold / 100)) {
-            executeProposal(proposal);
+        if (newProposal.weight >= (totalVotes * voteThreshold / 100)) {
+            executeProposal(proposals[propIndex]);
         }
         emit ProposalCreated(msg.sender, propIndex, hash);
     }
@@ -122,14 +122,14 @@ contract Administration is IAdministration {
         } else if (proposal.proposalType == 2) {
             updateCurator(proposal.user, proposal.value);
         } else if (proposal.proposalType == 3) {
-            TSHDATA(proxyContract).pauseContract(proposal.user, proposal.value);
+            TSHDATA(proxyContract).pauseContract(proposal.value);
         } else if (proposal.proposalType == 4) {
             TSHDATA(proxyContract).changeMinter(proposal.user);
         }
         emit ProposalExecuted(proposal.hash);
     }
 
-    function updateCurator(address curator, uint256 weight) public override onlyCurator {
+    function updateCurator(address curator, uint256 weight) public onlyCurator {
         require(weight <= maxWeight, "Weight exceeds max weight");
         if (weight == 0) {
             isCurator[curator] = false;

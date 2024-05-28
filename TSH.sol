@@ -71,8 +71,8 @@ contract CTSH is TSH {
         bytes memory result;
         (success, result) = proxy.staticcall(abi.encodeWithSignature("decimals()"));
         require(success);
-        uint decimals = abi.decode(result, (uint));
-        return decimals;
+        uint _decimals = abi.decode(result, (uint));
+        return _decimals;
     }
 
     function totalSupply() public virtual override view returns (uint) {
@@ -80,8 +80,8 @@ contract CTSH is TSH {
         bytes memory result;
         (success, result) = proxy.staticcall(abi.encodeWithSignature("totalSupply()"));
         require(success);
-        uint totalSupply = abi.decode(result, (uint));
-        return totalSupply;
+        uint _totalSupply = abi.decode(result, (uint));
+        return _totalSupply;
     }
 
     function balanceOf(address user) public virtual override view returns (uint) {

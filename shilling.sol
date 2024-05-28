@@ -5,10 +5,10 @@ interface TSHDATA {
     function totalSupply() external view returns (uint256);
     function balanceOf(address account, address m_sender) external view returns (uint256);
     function allowance(address owner, address spender) external view returns (uint256);
-    function increaseAllowance(address spender, uint256 value, address m_sender, uint type) external returns (bool);
-    function decreaseAllowance(address spender, uint256 value, address m_sender, uint type) external returns (bool);
+    function increaseAllowance(address spender, uint256 value, address m_sender, uint _type) external returns (bool);
+    function decreaseAllowance(address spender, uint256 value, address m_sender, uint _type) external returns (bool);
     function sendLiquid(address from, address to, uint256 amount, address m_sender) external returns (bool);
-    function approve(address spender, uint256 amount, address m_sender, uint type) external returns (bool);
+    function approve(address spender, uint256 amount, address m_sender, uint _type) external returns (bool);
     function mint(address to, uint256 value) external returns (bool);
     function burn(address to, uint256 value) external returns (bool);
     function changeMinter(address newminter) external returns (bool);
@@ -102,7 +102,7 @@ contract TSH {
         return true;
     }
     
-    function balanceOf(address user, address m_sender) public virtual override view returns (uint) {
+    function balanceOf(address user, address m_sender) public view returns (uint) {
         m_sender = address(0); //Placeholder depending on type of future upgrade
         return balanceOfUser[user];
     }
@@ -123,9 +123,9 @@ contract TSH {
         emit Transfer(from, to, value);
     }
 
-    function approve(address spender, uint value, address proxyaddy, uint type) external returns (bool) {
-        m_sender = msg.sender;
-        type = 0;
+    function approve(address spender, uint value, address proxyaddy, uint _type) external returns (bool) {
+        address m_sender = msg.sender;
+        _type = 0;
         if (msg.sender == proxy) {
             m_sender = proxyaddy;
         }
@@ -134,9 +134,9 @@ contract TSH {
         return true;
     }
 
-    function increaseAllowance(address spender, uint value, address proxyaddy, uint type) external returns (bool) {
-        m_sender = msg.sender;
-        type = 0;
+    function increaseAllowance(address spender, uint value, address proxyaddy, uint _type) external returns (bool) {
+        address m_sender = msg.sender;
+        _type = 0;
         if (msg.sender == proxy) {
             m_sender = proxyaddy;
         }
@@ -146,9 +146,9 @@ contract TSH {
         return true;
     }
     
-    function decreaseAllowance(address spender, uint value, address proxyaddy, uint type) external returns (bool) {
-        m_sender = msg.sender;
-        type = 0;
+    function decreaseAllowance(address spender, uint value, address proxyaddy, uint _type) external returns (bool) {
+        address m_sender = msg.sender;
+        _type = 0;
         if (msg.sender == proxy) {
             m_sender = proxyaddy;
         }
@@ -158,7 +158,7 @@ contract TSH {
     }
 
     function sendLiquid(address from, address to, uint value, address proxyaddy) external returns (bool) {
-        m_sender = msg.sender;
+        address m_sender = msg.sender;
         if (msg.sender == proxy) {
             m_sender = proxyaddy;
         }
@@ -166,6 +166,7 @@ contract TSH {
             allowance[from][m_sender] -= value;            
         }
         _transfer(from, to, value);
+        return true;
     }
 
     function transfer(address to, uint value) external returns (bool) {
