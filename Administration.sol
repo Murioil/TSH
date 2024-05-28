@@ -12,7 +12,6 @@ contract Administration {
     string public constant name = "Coin Administration";
     string public version = "1";
 
-    address public minter;
     address public proxyContract;
 
     uint256 public totalVotes;
@@ -49,7 +48,8 @@ contract Administration {
         _;
     }
 
-    constructor(uint256 _voteThreshold, uint256 _voteTimeLimit, uint256 weight, uint256 _maxWeight) {
+    constructor(address _proxyContract, uint256 _voteThreshold, uint256 _voteTimeLimit, uint256 weight, uint256 _maxWeight) {
+        proxyContract = _proxyContract;
         voteThreshold = _voteThreshold;
         voteTimeLimit = _voteTimeLimit;
         maxWeight = _maxWeight;
