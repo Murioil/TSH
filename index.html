@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="text/javascript" src="./bignumber.min.js"></script>
+  <script type="text/javascript" src="./sweetalert211.js"></script>
+  <script type="text/javascript" src="./web3.min.js"></script>
+  <script type="text/javascript" src="./ERC20.js"></script>
+  <script type="text/javascript" src="./ACCOUNTABI.js"></script>
+  <script type="text/javascript" src="./purify.js"></script>
+  <title>Murioil USD</title>
+  <!-- You may add styles to make buttons attractive -->
+  <style>
+    .button {
+      background-color: #4CAF50; /* Green */
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    .connect {
+      background-color: #4CAF50;
+    }
+    .mint {
+      background-color: #008CBA;
+    }
+    .burn {
+      background-color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <!-- Button to Connect -->
+  <div id="accountInfo">
+    Not Connected
+  </div>
+  <button class="button connect" onclick="connect()">Connect</button><br>
+
+  <!-- Button to Mint -->
+  <button class="button mint" onclick="mint()">Deposit/Mint</button><br>
+
+  <!-- Button to Burn -->
+  <button class="button burn" onclick="burn()">Withdraw/Burn</button><br>
+  <div id="generalInfo">
+    This page is for creating mUSD/mDAI. The user deposits DAI which is then wrapped in the contract. This lets Murioil <br>
+    keep track of things so they can insure deals. The advantage of this token is that if DAI fails the coins are still backed <br>
+    and redeemed by the tank storage space up to certain limits as set by the company. For more information contact Murioil. <br>
+    Enjoy this system as a safer alternative to most mainstream stablecoins. <br>
+  </div>
+  <!-- Your JavaScript functions should be placed after these buttons -->
+  <script>
+    var web3 = new Web3("https://rpc.ankr.com/eth");
+    var mDAI = "0x523Cf6a19Fb86E7813Bb8E95e98dA97FC4413d98";
+    var DAIOrig = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
+    var mAccount = "0xeA83F5903b1C0b4A1Dc3e5C6f1c93D7a33b2c4BD";
+    var mContract = "";
+    var dContract = "";
+    var oContract = "";
+    var myaccount = "";
+    var isConnected = false;
+    var mybalance;
+    var dbalance;
+    var gasPrice;
+    var gasOptions = {};
+
+    async function connect() {
+        if (window.ethereum) { //Note: for mobile this only works if the webpage has <head> tag
+            console.log("connecting");
+            await window.ethereum.request({method: 'eth_requestAccounts'});
+            web3 = new Web3(window.ethereum);
+            console.log("success");
+            isConnected = true;
+            document.getElementById("accountInfo").innerHTML = "Connected.";
+            await loadUser();
+        } else {
+            isConnected = false;
+            document.getElementById("accountInfo").innerHTML = "Not connected.";
+        }
+    }
+
+    async function loadUser() {
+      var text = '';
+      var currentChainId = DOMPurify.sanitize(await web3.eth.net.getId());
+      mybalance = 0;
+      dbalance = 0;
+      gasPrice = null;
+      var ethBalance = 0;
+      if (currentChainId == 1) {
+        text += "Connected to Ethereum<br>";
+        text += "Please add: " + mDAI + " to your Metamask so you can detect when you receive minted mDAI<br>";
+        mContract = new web3.eth.Contract(mAccountABI, mAccount);
+        dContract = new web3.eth.Contract(ERC20abi, mDAI);
+        oContract = new web3.eth.Contract(ERC20abi, DAIOrig);
+        myaccount = await web3.eth.getAccounts();
+        if (myaccount.length == 0) {
+            document.getElementById("accountInfo").innerHTML = translateThis("Please unlock Metamask so it can connect.");
+            return;
+        }
+        myaccount = myaccount[0]
+        console.log(myaccount)
+        await web3.eth.getGasPrice().then(function (theGasPrice) {
+          gasPrice = window.web3.utils.toWei(parseInt(parseInt(DOMPurify.sanitize(theGasPrice)) * 1.5).toString(), 'wei');
+          console.log(gasPrice)
+          if(parseInt(gasPrice) > 250000000000) {
+              gasPrice = "250000000000";                           
+          }
+          if(parseInt(gasPrice) < 10000000000) {
+              gasPrice = "10000000000";                          
+          }
+        });
+        gasOptions = {
+          gasLimit: 1500000,
+          gasPrice: gasPrice
+        };
+        await window.web3.eth.getBalance(myaccount, function(err, result1) {
+          ethBalance = DOMPurify.sanitize(result1);
+        });
+        mybalance = DOMPurify.sanitize(await dContract.methods.balanceOf(myaccount).call());
+        text += "mDAI Balance: " + displayDecimals(18, mybalance) + "<br>";
+        dbalance = DOMPurify.sanitize(await oContract.methods.balanceOf(myaccount).call());
+        text += "DAI Balance: " + displayDecimals(18, dbalance) + "<br>";
+        text += "ETH Balance: " + displayDecimals(18, ethBalance) + "<br>";
+      } else {
+        text += "Unsupported Network<br>";
+      }
+      document.getElementById("accountInfo").innerHTML = text;
+    }
+
+    function displayDecimals(num, amountString) {
+        var formattedAmount = '';
+        const length = amountString.length;
+
+        if (length <= num) {
+          const zerosToAdd = num - length;
+          amountString = '0'.repeat(zerosToAdd) + amountString;
+        }
+        const position = length - num;
+        formattedAmount = amountString.substring(0, position) + '.' + amountString.substring(position);
+        // Remove leading zeros
+        formattedAmount = formattedAmount.replace(/^0+/, '');
+        // If the string starts with a '.', prepend '0'
+        formattedAmount = formattedAmount.replace(/^\./, '0.');
+        // Remove trailing zeros
+        formattedAmount = formattedAmount.replace(/0+$/, '');
+        // If the string ends with a '.', remove it
+        formattedAmount = formattedAmount.replace(/\.$/, '');
+        return formattedAmount || '0';
+    }
+
+    async function mint() {
+      if(mContract == "") {
+        await Swal.fire("Not connected to network");
+        return;
+      }
+      try {
+        var allowance = DOMPurify.sanitize(await oContract.methods.allowance(myaccount, mAccount).call());
+        var value = web3.utils.toBN(2).pow(web3.utils.toBN(256)).sub(web3.utils.toBN(1));
+
+        if (web3.utils.toBN(allowance).lt(web3.utils.toBN(dbalance))) {
+          await Swal.fire("Requesting approval to interact with DAI...");
+          await oContract.methods.approve(mAccount, web3.utils.toHex(value)).send({"from":myaccount,...gasOptions});
+        }
+      } catch (error) {
+        console.error(error);
+        await Swal.fire(error.message);
+        return;
+      }
+      await Swal.fire({
+        title: 'Please enter amount of mDAI you wish to mint using DAI.',
+        input: 'text',
+        showCancelButton: true,
+        confirmButtonText: 'Submit',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+          const parsedValue = parseInt(value);
+          if (isNaN(parsedValue) || parsedValue <= 0) {
+            Swal.fire('Please enter a valid number greater than 0.');
+          }
+        },
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          result.value = web3.utils.toWei(result.value.toString(), 'ether');
+          if(web3.utils.toBN(dbalance).lt(web3.utils.toBN(result.value))) {
+            Swal.fire('You do not have enough DAI to mint this amount.');
+            return;
+          } else {
+            try {
+                await mContract.methods.deposit(result.value.toString()).send({"from":myaccount,...gasOptions});
+                await Swal.fire("Deposit successful!");
+                await connect();
+              } catch (error) {
+                console.error(error);
+                await Swal.fire(error.message);
+            }
+          }
+        }
+      });
+    }
+
+    async function burn() {
+      if(mContract == "") {
+        await Swal.fire("Not connected to network");
+        return;
+      }
+      await Swal.fire({
+        title: 'Please enter amount of mDAI you wish to convert to DAI.',
+        input: 'text',
+        showCancelButton: true,
+        confirmButtonText: 'Submit',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+          const parsedValue = parseInt(value);
+          if (isNaN(parsedValue) || parsedValue <= 0) {
+            Swal.fire('Please enter a valid number greater than 0.');
+          }
+        },
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          result.value = web3.utils.toWei(result.value.toString(), 'ether');
+          if(web3.utils.toBN(mybalance).lt(web3.utils.toBN(result.value))) {
+            Swal.fire('You do not have enough mDAI to withdraw this amount.');
+            return;
+          } else {
+            try {
+                await mContract.methods.withdraw(myaccount, result.value.toString()).send({"from":myaccount,...gasOptions});
+                await Swal.fire("Withdraw successful!");
+                await connect();
+              } catch (error) {
+                console.error(error);
+                await Swal.fire(error.message);
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
