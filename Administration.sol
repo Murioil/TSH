@@ -11,9 +11,7 @@ interface TSHDATA {
 contract Administration {
     string public constant name = "Coin Administration";
     string public version = "1";
-
     address public proxyContract;
-
     uint256 public totalVotes;
     uint256 public voteThreshold; // threshold in percentage
     uint256 public voteTimeLimit; // time limit for voting in seconds
@@ -38,7 +36,6 @@ contract Administration {
     address[] public curators;
     Proposal[] public proposals;
     uint256 public recentNonce; // minimum nonce where all prior orders in proposal expired
-    uint256 public timeLimit = 15552000; // curators should be encouraged to stay active(6 months)
 
     event ProposalCreated(address indexed from, uint256 indexed propIndex, bytes32 hash);
     event ProposalExecuted(bytes32 hash);
@@ -99,8 +96,8 @@ contract Administration {
         updateList(100);
         uint256 propIndex = proposalIndex[hash];
         Proposal storage proposal = proposals[propIndex];
-        require(!proposal.executed, "Proposal already executed");
         require(block.timestamp <= proposal.timestamp + voteTimeLimit, "Proposal expired");
+        require(propIndex >= recentNonce, "Proposal expired");
         require(!hasVoted[hash][msg.sender], "Already voted");
         hasVoted[hash][msg.sender] = true;
         proposal.weight += myWeight[msg.sender];
@@ -147,5 +144,6 @@ contract Administration {
             }
             myWeight[curator] = weight;
         }
+        recentNonce = proposals.length; //Changing curators should expire all proposals
     }
 }
