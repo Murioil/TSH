@@ -146,4 +146,8 @@ contract Administration {
         }
         recentNonce = proposals.length; //Changing curators should expire all proposals
     }
+
+    function getProposal(uint index) public view returns (Proposal memory) {
+        return proposals[index];
+    }
 }
