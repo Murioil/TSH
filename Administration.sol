@@ -52,6 +52,7 @@ contract Administration {
         maxWeight = _maxWeight;
         isCurator[msg.sender] = true;
         myWeight[msg.sender] = weight;
+        totalVotes += weight;
         curators.push(msg.sender);
     }
 
