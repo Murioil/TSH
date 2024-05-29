@@ -71,7 +71,7 @@ contract Administration {
 
     function createProposal(address user, uint256 value, uint8 proposalType) public onlyCurator {
         updateList(100);
-        bytes32 hash = keccak256(abi.encodePacked(user, value, proposalType, proposals.length - 1));
+        bytes32 hash = keccak256(abi.encodePacked(user, value, proposalType, proposals.length));
         Proposal memory newProposal = Proposal({
             proposer: msg.sender,
             user: user,
