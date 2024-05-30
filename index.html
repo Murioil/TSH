@@ -7,9 +7,10 @@
   <script type="text/javascript" src="./sweetalert211.js"></script>
   <script type="text/javascript" src="./web3.min.js"></script>
   <script type="text/javascript" src="./ERC20.js"></script>
-  <script type="text/javascript" src="./ACCOUNTABI.js"></script>
+  <script type="text/javascript" src="./Admin.js"></script>
+  <script type="text/javascript" src="./Data.js"></script>
   <script type="text/javascript" src="./purify.js"></script>
-  <title>Murioil USD</title>
+  <title>Murioil eShilling</title>
   <!-- You may add styles to make buttons attractive -->
   <style>
     .button {
@@ -43,32 +44,37 @@
   </div>
   <button class="button connect" onclick="connect()">Connect</button><br>
 
-  <!-- Button to Mint -->
-  <button class="button mint" onclick="mint()">Deposit/Mint</button><br>
-
-  <!-- Button to Burn -->
-  <button class="button burn" onclick="burn()">Withdraw/Burn</button><br>
+  <button class="button propose" onclick="propose()">Create Proposal</button><br>
+  <div id="proposalsList">
+  </div>
   <div id="generalInfo">
-    This page is for creating mUSD/mDAI. The user deposits DAI which is then wrapped in the contract. This lets Murioil <br>
-    keep track of things so they can insure deals. The advantage of this token is that if DAI fails the coins are still backed <br>
-    and redeemed by the tank storage space up to certain limits as set by the company. For more information contact Murioil. <br>
-    Enjoy this system as a safer alternative to most mainstream stablecoins. <br>
+    This page is for creating and managing eShillings. This should be for an alternative internal accounting of the banks owns ledgers.<br>
+    You will be able to vote on proposals to mint, burn, add cosigners and pause the contract. Users can manage their coins with Metamask<br>
+    or any ERC-20 account provider. This account is set with the eventual goal of transitioning to the peg with variable supply.<br><br>
+
+    IMPORTANT:
+    To avoid confusion, it's best that only one admin creates proposals while the others vote on it. By using this site you agree that<br>
+    you are entirely responsible for using this platform correctly. You should consistently audit your ledgers. Be careful not to accept<br>
+    the same proposal twice from different admins. Keep a recording of each hash you accept for easy cross referencing.
   </div>
   <!-- Your JavaScript functions should be placed after these buttons -->
   <script>
     var web3 = new Web3("https://rpc.ankr.com/eth");
-    var mDAI = "0x523Cf6a19Fb86E7813Bb8E95e98dA97FC4413d98";
-    var DAIOrig = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
-    var mAccount = "0xeA83F5903b1C0b4A1Dc3e5C6f1c93D7a33b2c4BD";
-    var mContract = "";
+    var ERC20Address = "0xFD6C933AF78A9B5c144b46643734C1e66F6aE0Cd";
+    var dataAddress = "0xea3f7efCFFB41F9ce806D39798520F900b53461A";
+    var adminAddress = "0xD13f8c5c0CAA91eD47483C30925710ac5D109261";
+    var eContract = "";
     var dContract = "";
-    var oContract = "";
+    var aContract = "";
     var myaccount = "";
     var isConnected = false;
-    var mybalance;
-    var dbalance;
+    var mybalance = 0;
     var gasPrice;
     var gasOptions = {};
+    var amCurator = false;
+    var decimals = 18;
+    var ebalance = 0;
+    var votetime = 0;
 
     async function connect() {
         if (window.ethereum) { //Note: for mobile this only works if the webpage has <head> tag
@@ -83,21 +89,20 @@
             isConnected = false;
             document.getElementById("accountInfo").innerHTML = "Not connected.";
         }
-    }
+    }    
 
     async function loadUser() {
       var text = '';
       var currentChainId = DOMPurify.sanitize(await web3.eth.net.getId());
       mybalance = 0;
-      dbalance = 0;
       gasPrice = null;
       var ethBalance = 0;
-      if (currentChainId == 1) {
-        text += "Connected to Ethereum<br>";
-        text += "Please add: " + mDAI + " to your Metamask so you can detect when you receive minted mDAI<br>";
-        mContract = new web3.eth.Contract(mAccountABI, mAccount);
-        dContract = new web3.eth.Contract(ERC20abi, mDAI);
-        oContract = new web3.eth.Contract(ERC20abi, DAIOrig);
+      if (currentChainId == 11155111) {
+        text += "Connected to Ethereum Testnet<br>";
+        text += "Please add: " + ERC20Address + " to your Metamask so you can detect when you receive minted TSH<br>";
+        eContract = new web3.eth.Contract(ERC20ABI, ERC20Address);
+        dContract = new web3.eth.Contract(DataABI, dataAddress);
+        aContract = new web3.eth.Contract(AdminABI, adminAddress);
         myaccount = await web3.eth.getAccounts();
         if (myaccount.length == 0) {
             document.getElementById("accountInfo").innerHTML = translateThis("Please unlock Metamask so it can connect.");
@@ -108,11 +113,11 @@
         await web3.eth.getGasPrice().then(function (theGasPrice) {
           gasPrice = window.web3.utils.toWei(parseInt(parseInt(DOMPurify.sanitize(theGasPrice)) * 1.5).toString(), 'wei');
           console.log(gasPrice)
-          if(parseInt(gasPrice) > 250000000000) {
-              gasPrice = "250000000000";                           
+          if(parseInt(gasPrice) > 900000000000) {
+              gasPrice = "900000000000";
           }
-          if(parseInt(gasPrice) < 10000000000) {
-              gasPrice = "10000000000";                          
+          if(parseInt(gasPrice) < 2500000000) {
+              gasPrice = "2500000000";
           }
         });
         gasOptions = {
@@ -122,15 +127,212 @@
         await window.web3.eth.getBalance(myaccount, function(err, result1) {
           ethBalance = DOMPurify.sanitize(result1);
         });
-        mybalance = DOMPurify.sanitize(await dContract.methods.balanceOf(myaccount).call());
-        text += "mDAI Balance: " + displayDecimals(18, mybalance) + "<br>";
-        dbalance = DOMPurify.sanitize(await oContract.methods.balanceOf(myaccount).call());
-        text += "DAI Balance: " + displayDecimals(18, dbalance) + "<br>";
-        text += "ETH Balance: " + displayDecimals(18, ethBalance) + "<br>";
+        mybalance = DOMPurify.sanitize(await eContract.methods.balanceOf(myaccount).call());
+        decimals = DOMPurify.sanitize(await eContract.methods.decimals().call());
+        totalsupply = DOMPurify.sanitize(await eContract.methods.totalSupply().call());
+        text += "TSH Balance: " + displayDecimals(decimals, mybalance) + "<br>";
+        text += "Total TSH in circulation: " + displayDecimals(decimals, totalsupply) + "<br>";
+        text += "ETH Balance(used for gas): " + displayDecimals(18, ethBalance) + "<br>";
+        const totalvotes = DOMPurify.sanitize(await aContract.methods.totalVotes().call());
+        text += "Total votes(consensus): " + totalvotes + "<br>";
+        const threshold = DOMPurify.sanitize(await aContract.methods.totalVotes().call());
+        text += "Vote Threshold: " + threshold + "%<br>";
+        votetime = DOMPurify.sanitize(await aContract.methods.voteTimeLimit().call());
+        text += "Proposal expiration time limit: " + (votetime / 60 / 60).toFixed(0) + " hours<br>";
+        abalance =  DOMPurify.sanitize(await eContract.methods.balanceOf(adminAddress).call());
+        text += "Administration address(users send here to burn/redeem coins for fiat shillings): " + adminAddress + "<br>";
+        text += "Funds ready to burn: " + displayDecimals(decimals, abalance) + "<br>";
+        var i = 0;
+        try {
+          while(i<20) {
+            const curator = DOMPurify.sanitize(await aContract.methods.curators(i).call());
+            const isActive = DOMPurify.sanitize(await aContract.methods.isCurator(curator).call());
+            if(isActive) {
+              if(curator == myaccount) {
+                text += "Curator(you): " + curator + "<br>";
+                amCurator = true;
+              } else {
+                text += "Curator: " + curator + "<br>";
+              }
+              const myWeight = DOMPurify.sanitize(await aContract.methods.myWeight(curator).call());
+              text += "Vote weight: " + myWeight + "(" + ((myWeight / totalvotes) * 100).toFixed(2) + "%)<br>";
+              if(parseInt(myWeight) != 100) {
+                text += "Warning - weight is not the typical 100 votes";
+              }
+            }
+            i++;
+          }
+        } catch(e) {
+        }
+        displayProposals();
       } else {
         text += "Unsupported Network<br>";
       }
       document.getElementById("accountInfo").innerHTML = text;
+    }
+    setInterval(loadUser, 2 * 60 * 1000);
+
+    // Function to display proposals in HTML
+    async function displayProposals() {
+        const proposalsList = document.getElementById('proposalsList');
+        proposalsList.innerHTML = "";
+        try {
+          var startingIndex = parseInt(await aContract.methods.recentNonce().call());
+          for (let index = startingIndex; index < 5000000000; index++) { // Assuming we have 5 proposals
+              const proposal = await aContract.methods.getProposal(index).call();
+              var ptype = DOMPurify.sanitize(proposal[3]);
+              var value = displayDecimals(decimals, DOMPurify.sanitize(proposal[2]));
+              const currentBlockNumber = await web3.eth.getBlockNumber();
+              const currentBlock = await web3.eth.getBlock(currentBlockNumber);
+              const blockTimestamp = DOMPurify.sanitize(currentBlock.timestamp);
+              var timeremaining = (((parseInt(DOMPurify.sanitize(proposal[4])) + parseInt(votetime)) - blockTimestamp) / 60 / 60).toFixed(2);
+              var expired = "Active";
+              if(DOMPurify.sanitize(proposal[7]) == true || DOMPurify.sanitize(proposal[7]) == "true") {
+                expired = "Completed";
+              }
+              if(timeremaining < 0) {
+                timeremaining = "**Expired**"
+                expired = "Expired";
+                //continue;
+              }
+              const proposalDiv = document.createElement('div');
+              proposalDiv.classList.add('proposal');
+              if(ptype == 0)  {
+                ptype = "Mint"
+                proposalDiv.innerHTML = `
+                    <p>Type: ${ptype}</p>
+                    <p>Proposer: ${DOMPurify.sanitize(proposal[0])}</p><br>
+                    <p>Recipient: ${DOMPurify.sanitize(proposal[1])}</p>
+                    <p>Amount: ${value}</p>                    
+                    <p>Time remaining before expiration: ${timeremaining} hours</p>
+                    <p>Weight/Votes on proposal: ${DOMPurify.sanitize(proposal[5])}</p>
+                    <p>Hash: ${DOMPurify.sanitize(proposal[6])}</p>
+                    <p>Status: ${expired}</p>
+                    <button class="accept-btn" onclick="voteProposal('${DOMPurify.sanitize(proposal[6])}','${expired}')">Accept</button>
+                `;
+              }
+              if(ptype == 1)  {
+                ptype = "Burn"
+                proposalDiv.innerHTML = `
+                    <p>Type: ${ptype}</p>
+                    <p>Proposer: ${DOMPurify.sanitize(proposal[0])}</p><br>
+                    <p>Funds burned from admin account.</p>
+                    <p>Amount: ${value}</p>                    
+                    <p>Time remaining before expiration: ${timeremaining} hours</p>
+                    <p>Weight/Votes on proposal: ${DOMPurify.sanitize(proposal[5])}</p>
+                    <p>Hash: ${DOMPurify.sanitize(proposal[6])}</p>
+                    <p>Status: ${expired}</p>
+                    <button class="accept-btn" onclick="voteProposal('${DOMPurify.sanitize(proposal[6])}','${expired}')">Accept</button>
+                `;
+              }
+              if(ptype == 2)  {
+                ptype = "Add/Remove Custodian"
+                if(value != 100 || value != "100") {
+                  value = value + " (warning, not the typical 100 votes)";
+                }
+                proposalDiv.innerHTML = `
+                    <p>Type: ${ptype}</p>
+                    <p>Proposer: ${DOMPurify.sanitize(proposal[0])}</p><br>
+                    <p>Add/Remove user: ${DOMPurify.sanitize(proposal[1])}</p>
+                    <p>Custodians proposed Weight/Votes: ${value}</p>                    
+                    <p>Time remaining before expiration: ${timeremaining} hours</p>
+                    <p>Weight/Votes on proposal: ${DOMPurify.sanitize(proposal[5])}</p>
+                    <p>Hash: ${DOMPurify.sanitize(proposal[6])}</p>
+                    <p>Status: ${expired}</p>
+                    <button class="accept-btn" onclick="voteProposal('${DOMPurify.sanitize(proposal[6])}','${expired}')">Accept</button>
+                `;
+              }
+              if(ptype == 3)  {
+                ptype = "Pause Contract"
+                proposalDiv.innerHTML = `
+                    <p>Type: ${ptype}</p>
+                    <p>Proposer: ${DOMPurify.sanitize(proposal[0])}</p><br>
+                    <p>Days to Pause: ${(parseFloat(value)/60/60/24).toFixed(2)}</p>
+                    <p>Time remaining before expiration: ${timeremaining} hours</p>
+                    <p>Weight/Votes on proposal: ${DOMPurify.sanitize(proposal[5])}</p>
+                    <p>Hash: ${DOMPurify.sanitize(proposal[6])}</p>
+                    <p>Status: ${expired}</p>
+                    <button class="accept-btn" onclick="voteProposal('${DOMPurify.sanitize(proposal[6])}','${expired}')">Accept</button>
+                `;
+              }
+              proposalDiv.innerHTML += "<br><br>"
+
+              // Append the proposal div to the proposals list
+              proposalsList.appendChild(proposalDiv);
+              const proposalStyle = document.createElement('style');
+              proposalStyle.textContent = `
+                  .proposal {
+                      border: 1px solid #ccc;
+                      border-radius: 8px;
+                      padding: 15px;
+                      margin-bottom: 20px;
+                      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                      background-color: #f9f9f9;
+                  }
+
+                  .proposal p {
+                      margin: 5px 0;
+                  }
+
+                  .accept-btn {
+                      background-color: #4CAF50;
+                      color: white;
+                      border: none;
+                      padding: 10px 20px;
+                      cursor: pointer;
+                      border-radius: 5px;
+                      font-size: 16px;
+                      transition: background-color 0.3s;
+                  }
+
+                  .accept-btn:hover {
+                      background-color: #45a049;
+                  }
+              `;
+
+              // Append the style to the document head
+              document.head.appendChild(proposalStyle);
+          }
+        } catch(e) {
+          console.log(e)
+        }
+    }
+
+    async function voteProposal(proposalHash, status) {
+      if(aContract == "") {
+        await Swal.fire("Not connected to network");
+        return;
+      }
+      if(!amCurator) {
+        await Swal.fire("You are not a curator");
+        return;
+      }
+      if(status == "Expired") {
+        await Swal.fire("Proposal has expired");
+        return;
+      }
+      if(status == "Completed") {
+        await Swal.fire("Proposal was already completed");
+        return;
+      }
+      try {
+        Swal.fire({
+            title: 'Processing...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        await aContract.methods.voteProposal(proposalHash).send({"from":myaccount,...gasOptions});
+        Swal.close();
+      } catch(e) {
+        Swal.close();
+        await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: e.message ? e.message : 'Something went wrong!'
+        });
+      }      
     }
 
     function displayDecimals(num, amountString) {
@@ -154,91 +356,131 @@
         return formattedAmount || '0';
     }
 
-    async function mint() {
-      if(mContract == "") {
+    async function propose() {
+      if(aContract == "") {
         await Swal.fire("Not connected to network");
+        return;
+      }
+      if(!amCurator) {
+        await Swal.fire("You are not a curator");
         return;
       }
       try {
-        var allowance = DOMPurify.sanitize(await oContract.methods.allowance(myaccount, mAccount).call());
-        var value = web3.utils.toBN(2).pow(web3.utils.toBN(256)).sub(web3.utils.toBN(1));
+        var finalValue = '';
+        await Swal.fire({
+            title: 'Select an action',
+            input: 'select',
+            inputOptions: {
+                mint: 'Mint',
+                burn: 'Burn',
+                add_edit_curator: 'Add/Edit Curator',
+                pause_contract: 'Pause Contract(30 days)'
+            },
+            inputPlaceholder: 'Select an action',
+            showCancelButton: true,
+            preConfirm: (action) => {
+                let valueFields = '';
+                if (action === 'mint') {
+                    valueFields = `
+                        <label for="recipient">Recipient:</label>
+                        <input id="recipient" class="swal2-input">
+                        <label for="mintAmount">Mint Amount:</label>
+                        <input id="mintAmount" type="number" class="swal2-input">
+                    `;
+                } else if (action === 'burn') {
+                    valueFields = `
+                        <label for="burnAmount">Burn Amount:</label>
+                        <input id="burnAmount" type="number" class="swal2-input">
+                    `;
+                } else if (action === 'add_edit_curator') {
+                    valueFields = `
+                        <label for="curatorAddress">Curator Address:</label>
+                        <input id="curatorAddress" class="swal2-input">
+                    `;
+                }
 
-        if (web3.utils.toBN(allowance).lt(web3.utils.toBN(dbalance))) {
-          await Swal.fire("Requesting approval to interact with DAI...");
-          await oContract.methods.approve(mAccount, web3.utils.toHex(value)).send({"from":myaccount,...gasOptions});
-        }
-      } catch (error) {
-        console.error(error);
-        await Swal.fire(error.message);
-        return;
-      }
-      await Swal.fire({
-        title: 'Please enter amount of mDAI you wish to mint using DAI.',
-        input: 'text',
-        showCancelButton: true,
-        confirmButtonText: 'Submit',
-        cancelButtonText: 'Cancel',
-        inputValidator: (value) => {
-          const parsedValue = parseInt(value);
-          if (isNaN(parsedValue) || parsedValue <= 0) {
-            Swal.fire('Please enter a valid number greater than 0.');
-          }
-        },
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          result.value = web3.utils.toWei(result.value.toString(), 'ether');
-          if(web3.utils.toBN(dbalance).lt(web3.utils.toBN(result.value))) {
-            Swal.fire('You do not have enough DAI to mint this amount.');
-            return;
-          } else {
-            try {
-                await mContract.methods.deposit(result.value.toString()).send({"from":myaccount,...gasOptions});
-                await Swal.fire("Deposit successful!");
-                await connect();
-              } catch (error) {
-                console.error(error);
-                await Swal.fire(error.message);
+                if (action !== 'pause_contract') {
+                    return Swal.fire({
+                        title: 'Enter details',
+                        html: valueFields,
+                        preConfirm: () => {
+                            return { action };
+                        }
+                    });
+                } else {
+                    return { action };
+                }
             }
-          }
-        }
-      });
-    }
-
-    async function burn() {
-      if(mContract == "") {
-        await Swal.fire("Not connected to network");
-        return;
-      }
-      await Swal.fire({
-        title: 'Please enter amount of mDAI you wish to convert to DAI.',
-        input: 'text',
-        showCancelButton: true,
-        confirmButtonText: 'Submit',
-        cancelButtonText: 'Cancel',
-        inputValidator: (value) => {
-          const parsedValue = parseInt(value);
-          if (isNaN(parsedValue) || parsedValue <= 0) {
-            Swal.fire('Please enter a valid number greater than 0.');
-          }
-        },
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          result.value = web3.utils.toWei(result.value.toString(), 'ether');
-          if(web3.utils.toBN(mybalance).lt(web3.utils.toBN(result.value))) {
-            Swal.fire('You do not have enough mDAI to withdraw this amount.');
-            return;
-          } else {
-            try {
-                await mContract.methods.withdraw(myaccount, result.value.toString()).send({"from":myaccount,...gasOptions});
-                await Swal.fire("Withdraw successful!");
-                await connect();
-              } catch (error) {
-                console.error(error);
-                await Swal.fire(error.message);
+        }).then(async(result) => {
+            if (result.isConfirmed) {
+                let finalAction = result.value.value.action;
+                console.log(finalAction);
+                switch (finalAction) {
+                    case 'mint':
+                        finalValue = {
+                            actionCode: 0,
+                            recipient: document.getElementById('recipient').value,
+                            mintAmount: document.getElementById('mintAmount').value
+                        };
+                        break;
+                    case 'burn':
+                        finalValue = {
+                            actionCode: 1,
+                            burnAmount: document.getElementById('burnAmount').value
+                        };
+                        break;
+                    case 'add_edit_curator':
+                        finalValue = {
+                            actionCode: 2,
+                            curatorAddress: document.getElementById('curatorAddress').value
+                        };
+                        break;
+                    case 'pause_contract':
+                        finalValue = {
+                            actionCode: 3
+                        };
+                        break;
+                }
+                Swal.fire({
+                    title: 'Processing...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                console.log(JSON.stringify(finalValue));
+                // Handle the final action and values here
+                if(finalValue.actionCode == 0) {
+                  const value = (new BigNumber(finalValue.mintAmount.toString()).times(new BigNumber(10).pow(decimals))).toFixed(0)
+                  await aContract.methods.createProposal(finalValue.recipient.toString(), value, finalValue.actionCode).send({"from":myaccount,...gasOptions});
+                }
+                if(finalValue.actionCode == 1) {
+                  const value = (new BigNumber(finalValue.burnAmount.toString()).times(new BigNumber(10).pow(decimals))).toFixed(0)
+                  if(web3.utils.toBN(abalance).lt(web3.utils.toBN(value))) {
+                    Swal.fire('Not enough funds available to burn.');
+                    return;
+                  }
+                  await aContract.methods.createProposal(adminAddress, value, finalValue.actionCode).send({"from":myaccount,...gasOptions});
+                }
+                if(finalValue.actionCode == 2) {
+                  await aContract.methods.createProposal(finalValue.curatorAddress.toString(), "100", finalValue.actionCode).send({"from":myaccount,...gasOptions});
+                }
+                if(finalValue.actionCode == 3) {
+                  await aContract.methods.createProposal(myaccount, 2591940, finalValue.actionCode).send({"from":myaccount,...gasOptions});
+                }
+                Swal.close();
+                await Swal.fire('Transaction confirmed!');
+                await loadUser();
             }
-          }
-        }
-      });
+        });
+      } catch(e) {
+        Swal.close();
+        await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: e.message ? e.message : 'Something went wrong!'
+        });
+      }
     }
   </script>
 </body>
