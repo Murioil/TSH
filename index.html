@@ -45,6 +45,7 @@
   <button class="button connect" onclick="connect()">Connect</button><br>
 
   <button class="button propose" onclick="propose()">Create Proposal</button><br>
+  <button class="button propose" onclick="audit()">Export weekly minting audit report</button><br>
   <div id="proposalsList">
   </div>
   <div id="generalInfo">
@@ -140,7 +141,7 @@
         votetime = DOMPurify.sanitize(await aContract.methods.voteTimeLimit().call());
         text += "Proposal expiration time limit: " + (votetime / 60 / 60).toFixed(0) + " hours<br>";
         abalance =  DOMPurify.sanitize(await eContract.methods.balanceOf(adminAddress).call());
-        text += "Administration address(users send here to burn/redeem coins for fiat shillings): " + adminAddress + "<br>";
+        text += "Administration address(users send here to burn coins for fiat shillings): " + adminAddress + "<br>";
         text += "Funds ready to burn: " + displayDecimals(decimals, abalance) + "<br>";
         var i = 0;
         try {
@@ -177,7 +178,7 @@
         const proposalsList = document.getElementById('proposalsList');
         proposalsList.innerHTML = "";
         try {
-          var startingIndex = parseInt(await aContract.methods.recentNonce().call());
+          var startingIndex = parseInt(DOMPurify.sanitize(await aContract.methods.recentNonce().call()));
           for (let index = startingIndex; index < 5000000000; index++) { // Assuming we have 5 proposals
               const proposal = await aContract.methods.getProposal(index).call();
               var ptype = DOMPurify.sanitize(proposal[3]);
@@ -480,6 +481,32 @@
             title: 'Error',
             text: e.message ? e.message : 'Something went wrong!'
         });
+      }
+    }
+
+    async function audit() {
+      if(aContract == "") {
+        await Swal.fire("Not connected to network");
+        return;
+      }
+      auditnonce = 0//parseInt(DOMPurify.sanitize(await dContract.methods.auditnonce().call()));
+      myaudit = "";
+      x = 0;
+      while(true) {
+         const address = DOMPurify.sanitize(await dContract.methods.auditAddresses(auditnonce, x).call());
+         const amount = DOMPurify.sanitize(await dContract.methods.auditAmounts(auditnonce, x).call());
+         myaudit += "Address: " + address + "\nAmount: " + displayDecimals(decimals, amount) + "\n\n";
+         x += 1;
+      }
+      console.log(myaudit)
+      if(auditnonce != 0) {
+        auditnonce -= 1;
+        x = 0;
+        while(true) {
+           const address = DOMPurify.sanitize(await dContract.methods.auditAddresses(auditnonce, x).call());
+           const amount = DOMPurify.sanitize(await dContract.methods.auditAmounts(auditnonce, x).call());
+           x += 1;
+        }
       }
     }
   </script>
