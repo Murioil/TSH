@@ -27,8 +27,8 @@ contract TSH {
     mapping(uint => address[]) public auditAddresses;
     mapping(uint => uint[]) public auditAmounts;
     mapping(uint => uint) public nonceTime;
-    uint lastTimestamp;
-    uint auditnonce;
+    uint public lastTimestamp;
+    uint public auditnonce;
     mapping (address => uint) public nonces;
     bytes32 public DOMAIN_SEPARATOR;
     // bytes32 public constant PERMIT_TYPEHASH = keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)");
@@ -41,8 +41,7 @@ contract TSH {
     event Transfer(address indexed from, address indexed to, uint value);    
 
     constructor(uint256 chainId_) {
-        minter = msg.sender;
-        lastTimestamp = block.timestamp;
+        minter = msg.sender;        
         nonceTime[auditnonce] = block.timestamp;
         DOMAIN_SEPARATOR = keccak256(abi.encode(
             keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
