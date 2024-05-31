@@ -188,13 +188,13 @@
               const blockTimestamp = DOMPurify.sanitize(currentBlock.timestamp);
               var timeremaining = (((parseInt(DOMPurify.sanitize(proposal[4])) + parseInt(votetime)) - blockTimestamp) / 60 / 60).toFixed(2);
               var expired = "Active";
-              if(DOMPurify.sanitize(proposal[7]) == true || DOMPurify.sanitize(proposal[7]) == "true") {
-                expired = "Completed";
-              }
               if(timeremaining < 0) {
                 timeremaining = "**Expired**"
                 expired = "Expired";
                 //continue;
+              }
+              if(DOMPurify.sanitize(proposal[7]) == true || DOMPurify.sanitize(proposal[7]) == "true") {
+                expired = "Completed";
               }
               const proposalDiv = document.createElement('div');
               proposalDiv.classList.add('proposal');

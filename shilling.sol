@@ -59,15 +59,15 @@ contract TSH {
         paused = block.timestamp + duration;
         return true;
     }
-    function getLen(uint which) public view returns (uint mylen) {
+    function getLen(uint which, uint thenonce) public view returns (uint mylen) {
         if(which == 0) {
             return users.length;
         }
         if(which == 1) {
-            return auditAddresses.length;
+            return auditAddresses[thenonce].length;
         }
         if(which == 2) {
-            return auditAddresses2.length;
+            return auditAddresses2[thenonce].length;
         }
     }
     function mint(address to, uint value) external returns (bool) {
