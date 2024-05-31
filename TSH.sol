@@ -26,44 +26,44 @@ contract CTSH is TSH {
     
     address public minter;
     address public proxy; //Where all the coin functions and storage are
-    address public LiquidityPool;
-    address public lockpair; //An exception to not revert a temporary reentry
-
+    address public proposedProxy;
     uint public proxylock;
+
+    // bytes32 public constant PERMIT_TYPEHASH = keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)");
+    bytes32 public constant PERMIT_TYPEHASH = 0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb;
+    bytes32 public DOMAIN_SEPARATOR;
+    mapping (address => uint) public nonces;    
     
-    constructor() {
+    constructor(uint256 chainId_) {
         minter = msg.sender;
+        DOMAIN_SEPARATOR = keccak256(abi.encode(
+            keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+            keccak256(bytes(name)),
+            keccak256(bytes(version)),
+            chainId_,
+            address(this)
+        ));
     }
 
     function changeMinter(address newminter) public {
         require(msg.sender == minter);
         minter = newminter;
-    }    
-
+    }
     function setProxy(address prox) public {
-        require(block.timestamp > proxylock);
         require(msg.sender == minter);
-        proxy = prox;
+        if(proxy == address(0)) {            
+            proxy = prox;
+        } else {
+            if(proposedProxy != address(0)) {
+                require(block.timestamp > proxylock);
+                proxy = proposedProxy;
+            }
+        }
+        require(proposedProxy == address(0));
+        proposedProxy = prox;
+        proxylock = block.timestamp + 2592000;
     }
 
-    function setLiquidityPool(address prox) public {
-        require(block.timestamp > proxylock);
-        require(msg.sender == minter);
-        LiquidityPool = prox;
-    }
-
-    function lockProxies(uint locktime) public returns (bool) {
-        require(msg.sender == minter);
-        proxylock = block.timestamp + locktime;
-        return true;
-    }
-
-    function lockthis(address pair) public returns (bool) {
-        require(msg.sender == LiquidityPool);
-        lockpair = pair;
-        return true;
-    }
-    
     //ERC20 Functions
     //Note: Solidity does not allow spaces between parameters in abi function calls
     function decimals() public virtual override view returns (uint) {
@@ -74,7 +74,6 @@ contract CTSH is TSH {
         uint _decimals = abi.decode(result, (uint));
         return _decimals;
     }
-
     function totalSupply() public virtual override view returns (uint) {
         bool success;
         bytes memory result;
@@ -83,7 +82,6 @@ contract CTSH is TSH {
         uint _totalSupply = abi.decode(result, (uint));
         return _totalSupply;
     }
-
     function balanceOf(address user) public virtual override view returns (uint) {
         bool success;
         bytes memory result;
@@ -91,16 +89,14 @@ contract CTSH is TSH {
         require(success);
         uint liquid = abi.decode(result, (uint));
         return liquid;
-    }
-    
+    }    
     function allowance(address owner, address spender) public virtual override view returns (uint) {
         bool success;
         bytes memory result;
         (success, result) = proxy.staticcall(abi.encodeWithSignature("allowance(address,address)",owner,spender));
         require(success);
         return abi.decode(result, (uint));
-    }
-    
+    }    
     function approve(address spender, uint value) public virtual override returns (bool) {
         require(spender != address(0));
         bool success;
@@ -109,8 +105,7 @@ contract CTSH is TSH {
         require(success);
         emit Approval(msg.sender, spender, value);
         return true;
-    }
-    
+    }    
     function increaseAllowance(address spender, uint value) public virtual override returns (bool) {
         require(spender != address(0));
         bool success;
@@ -119,8 +114,7 @@ contract CTSH is TSH {
         require(success); 
         emit Approval(msg.sender, spender, allowance(msg.sender, spender));
         return true;
-    }
-    
+    }    
     function decreaseAllowance(address spender, uint value) public virtual override returns (bool) {
         require(spender != address(0));
         bool success;
@@ -129,31 +123,38 @@ contract CTSH is TSH {
         require(success); 
         emit Approval(msg.sender, spender, allowance(msg.sender, spender));
         return true;
-    }
-    
+    }    
     function transfer(address to, uint value) public virtual override returns (bool) {
-        if(msg.sender == lockpair) {
-            lockpair = address(0);
-            return true;
-        }
         bool success;
         bytes memory result;
         (success, result) = proxy.call(abi.encodeWithSignature("sendLiquid(address,address,uint256,address)",msg.sender,to,value,msg.sender));
         require(success);
         emit Transfer(msg.sender, to, value);
         return true;
-    }
-    
+    }    
     function transferFrom(address from, address to, uint value) public virtual override returns (bool) {
-        if(msg.sender == lockpair) {
-            lockpair = address(0);
-            return true;
-        }
         bool success;
         bytes memory result;
         (success, result) = proxy.call(abi.encodeWithSignature("sendLiquid(address,address,uint256,address)",from,to,value,msg.sender));
         require(success);
         emit Transfer(from, to, value);
+        return true;
+    }
+    // --- Approve by signature ---
+    function permit(address holder, address spender, uint256 nonce, uint256 expiry, bool allowed, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01",DOMAIN_SEPARATOR,keccak256(abi.encode(PERMIT_TYPEHASH,holder,spender,nonce,expiry,allowed))));
+        require(holder != address(0), "Invalid-address");
+        require(holder == ecrecover(digest, v, r, s), "Invalid-permit");
+        require(expiry == 0 || block.timestamp <= expiry, "Permit-expired");
+        require(nonce == nonces[holder], "Invalid-nonce");
+        require(spender != address(0));
+        nonces[holder]+=1;
+        uint wad = allowed ? type(uint256).max : 0;        
+        bool success;
+        bytes memory result;
+        (success, result) = proxy.call(abi.encodeWithSignature("approve(address,uint256,address,uint256)",spender,wad,holder,0));
+        require(success);
+        emit Approval(holder, spender, wad);
         return true;
     }
 }
