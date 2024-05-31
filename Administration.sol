@@ -11,11 +11,6 @@ interface TSHDATA {
 contract Administration {
     string public constant name = "Coin Administration";
     string public version = "1";
-    address public proxyContract;
-    uint256 public totalVotes;
-    uint256 public voteThreshold; // threshold in percentage
-    uint256 public voteTimeLimit; // time limit for voting in seconds
-    uint256 public maxWeight;
 
     struct Proposal {
         address proposer;
@@ -27,16 +22,18 @@ contract Administration {
         bytes32 hash;
         bool executed;
     }
-
     mapping(address => bool) public isCurator;
     mapping(address => uint256) public myWeight;
     mapping(bytes32 => uint256) public proposalIndex; // map proposal hash to index in proposals array
-    mapping(bytes32 => mapping(address => bool)) public hasVoted;
-
+    mapping(bytes32 => mapping(address => bool)) public hasVoted;    
+    uint256 public totalVotes;
+    uint256 public voteThreshold; // threshold in percentage
+    uint256 public voteTimeLimit; // time limit for voting in seconds
+    uint256 public maxWeight;
     address[] public curators;
     Proposal[] public proposals;
     uint256 public recentNonce; // minimum nonce where all prior orders in proposal expired
-
+    address public proxyContract;
     event ProposalCreated(address indexed from, uint256 indexed propIndex, bytes32 hash);
     event ProposalExecuted(bytes32 hash);
 
@@ -68,7 +65,14 @@ contract Administration {
             x++;
         }
     }
-
+    function getLen(uint which) public view returns (uint mylen) {
+        if(which == 0) {
+            return proposals.length;
+        }
+        if(which == 1) {
+            return curators.length;
+        }
+    }
     function createProposal(address user, uint256 value, uint8 proposalType) public onlyCurator {
         updateList(100);
         bytes32 hash = keccak256(abi.encodePacked(user, value, proposalType, proposals.length));
@@ -92,7 +96,6 @@ contract Administration {
         }
         emit ProposalCreated(msg.sender, propIndex, hash);
     }
-
     function voteProposal(bytes32 hash) public onlyCurator {
         updateList(100);
         uint256 propIndex = proposalIndex[hash];
@@ -106,7 +109,6 @@ contract Administration {
             executeProposal(proposal);
         }
     }
-
     function executeProposal(Proposal storage proposal) internal {
         require(!proposal.executed, "Proposal already executed");
         require(proposal.weight >= (totalVotes * voteThreshold / 100), "Not enough votes");
@@ -126,7 +128,6 @@ contract Administration {
         }
         emit ProposalExecuted(proposal.hash);
     }
-
     function updateCurator(address curator, uint256 weight) internal {
         require(weight <= maxWeight, "Weight exceeds max weight");
         if (weight == 0) {
@@ -147,7 +148,6 @@ contract Administration {
         }
         recentNonce = proposals.length; //Changing curators should expire all proposals
     }
-
     function getProposal(uint index) public view returns (Proposal memory) {
         return proposals[index];
     }

@@ -36,7 +36,7 @@ contract TSH {
     address public proxy;
     uint public paused;
     event Approval(address indexed owner, address indexed spender, uint value);
-    event Transfer(address indexed from, address indexed to, uint value);    
+    event Transfer(address indexed from, address indexed to, uint value);
 
     constructor() {
         minter = msg.sender;
@@ -59,7 +59,7 @@ contract TSH {
         paused = block.timestamp + duration;
         return true;
     }
-    function getLen(uint which) public view returns (uint) {
+    function getLen(uint which) public view returns (uint mylen) {
         if(which == 0) {
             return users.length;
         }
@@ -159,7 +159,7 @@ contract TSH {
             m_sender = proxyaddy;
         }
         if(from != m_sender) {
-            allowance[from][m_sender] -= value;            
+            allowance[from][m_sender] -= value;
         }
         _transfer(from, to, value);
         return true;

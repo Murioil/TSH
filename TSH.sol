@@ -20,19 +20,18 @@ contract CTSH is TSH {
     string public constant name     = "eShilling";
     string public constant symbol   = "TSH";
     string public version  = "1";
-    
-    event Approval(address indexed from, address indexed to, uint amount);
-    event Transfer(address indexed from, address indexed to, uint amount);
-    
+       
     address public minter;
     address public proxy; //Where all the coin functions and storage are
     address public proposedProxy;
     uint public proxylock;
+    event Approval(address indexed from, address indexed to, uint amount);
+    event Transfer(address indexed from, address indexed to, uint amount);
 
     // bytes32 public constant PERMIT_TYPEHASH = keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)");
     bytes32 public constant PERMIT_TYPEHASH = 0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb;
     bytes32 public DOMAIN_SEPARATOR;
-    mapping (address => uint) public nonces;    
+    mapping (address => uint) public nonces;
     
     constructor(uint256 chainId_) {
         minter = msg.sender;
@@ -155,6 +154,5 @@ contract CTSH is TSH {
         (success, result) = proxy.call(abi.encodeWithSignature("approve(address,uint256,address,uint256)",spender,wad,holder,0));
         require(success);
         emit Approval(holder, spender, wad);
-        return true;
     }
 }
