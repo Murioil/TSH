@@ -63,6 +63,32 @@ AdminABI = [
 	{
 		"inputs": [
 			{
+				"internalType": "uint256",
+				"name": "iterations",
+				"type": "uint256"
+			}
+		],
+		"name": "updateList",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "hash",
+				"type": "bytes32"
+			}
+		],
+		"name": "voteProposal",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "address",
 				"name": "_proxyContract",
 				"type": "address"
@@ -95,32 +121,6 @@ AdminABI = [
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "iterations",
-				"type": "uint256"
-			}
-		],
-		"name": "updateList",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "hash",
-				"type": "bytes32"
-			}
-		],
-		"name": "voteProposal",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
 			}
@@ -131,6 +131,25 @@ AdminABI = [
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "which",
+				"type": "uint256"
+			}
+		],
+		"name": "getLen",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "mylen",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",

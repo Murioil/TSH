@@ -61,9 +61,9 @@
   <!-- Your JavaScript functions should be placed after these buttons -->
   <script>
     var web3 = new Web3("https://rpc.ankr.com/eth");
-    var ERC20Address = "0xFD6C933AF78A9B5c144b46643734C1e66F6aE0Cd";
-    var dataAddress = "0xea3f7efCFFB41F9ce806D39798520F900b53461A";
-    var adminAddress = "0xD13f8c5c0CAA91eD47483C30925710ac5D109261";
+    var ERC20Address = "0x84eC111c281ac24faAe80dB463905f2E0E501eFf";
+    var dataAddress = "0xf5D0cdb0C3Be19478445c29D3aB4830ce10E3A45";
+    var adminAddress = "0x0Be903b8eDD79ee3319302AdaF9677995f66e1a1";
     var eContract = "";
     var dContract = "";
     var aContract = "";
@@ -145,7 +145,8 @@
         text += "Funds ready to burn: " + displayDecimals(decimals, abalance) + "<br>";
         var i = 0;
         try {
-          while(i<20) {
+          var mylen = DOMPurify.sanitize(await aContract.methods.getLen(1).call());
+          while(i<mylen) {
             const curator = DOMPurify.sanitize(await aContract.methods.curators(i).call());
             const isActive = DOMPurify.sanitize(await aContract.methods.isCurator(curator).call());
             if(isActive) {
@@ -179,7 +180,8 @@
         proposalsList.innerHTML = "";
         try {
           var startingIndex = parseInt(DOMPurify.sanitize(await aContract.methods.recentNonce().call()));
-          for (let index = startingIndex; index < 5000000000; index++) { // Assuming we have 5 proposals
+          var mylen = DOMPurify.sanitize(await aContract.methods.getLen(0).call());
+          for (let index = startingIndex; index < mylen; index++) { // Assuming we have 5 proposals
               const proposal = await aContract.methods.getProposal(index).call();
               var ptype = DOMPurify.sanitize(proposal[3]);
               var value = displayDecimals(decimals, DOMPurify.sanitize(proposal[2]));
@@ -484,30 +486,43 @@
       }
     }
 
+    const downloadTxtFile = (content, filename) => {
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
     async function audit() {
       if(aContract == "") {
         await Swal.fire("Not connected to network");
         return;
       }
-      auditnonce = 0//parseInt(DOMPurify.sanitize(await dContract.methods.auditnonce().call()));
+      auditnonce = parseInt(DOMPurify.sanitize(await dContract.methods.auditnonce().call()));
+      var mylen = DOMPurify.sanitize(await dContract.methods.getLen(1, auditnonce).call());
       myaudit = "";
       x = 0;
-      while(true) {
+      while(x < mylen) {
          const address = DOMPurify.sanitize(await dContract.methods.auditAddresses(auditnonce, x).call());
          const amount = DOMPurify.sanitize(await dContract.methods.auditAmounts(auditnonce, x).call());
-         myaudit += "Address: " + address + "\nAmount: " + displayDecimals(decimals, amount) + "\n\n";
+         myaudit += "Mint to Address: " + address + "\r\nAmount: " + displayDecimals(decimals, amount) + "\r\n\r\n";
          x += 1;
-      }
-      console.log(myaudit)
+      }      
       if(auditnonce != 0) {
         auditnonce -= 1;
+        mylen = DOMPurify.sanitize(await dContract.methods.getLen(1, auditnonce).call());
         x = 0;
-        while(true) {
+        while(x < mylen) {
            const address = DOMPurify.sanitize(await dContract.methods.auditAddresses(auditnonce, x).call());
            const amount = DOMPurify.sanitize(await dContract.methods.auditAmounts(auditnonce, x).call());
+           myaudit += "Mint to address: " + address + "\r\nAmount: " + displayDecimals(decimals, amount) + "\r\n\r\n";
            x += 1;
         }
       }
+      downloadTxtFile(myaudit, "audit.txt")
     }
   </script>
 </body>
