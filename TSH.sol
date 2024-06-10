@@ -50,6 +50,7 @@ contract CTSH is TSH {
         require(msg.sender == minter);
         if(proxy == address(0)) {
             proxy = prox;
+            return;
         } else {
             if(proposedProxy != address(0)) {
                 require(block.timestamp > proxylock);
@@ -59,6 +60,7 @@ contract CTSH is TSH {
                 (success, result) = proxy.staticcall(abi.encodeWithSignature("pauseContract(uint)",thetime));
                 require(success);
                 proxy = proposedProxy;
+                return;
             }
         }
         require(proposedProxy == address(0));
