@@ -61,9 +61,9 @@
   <!-- Your JavaScript functions should be placed after these buttons -->
   <script>
     var web3 = new Web3("https://rpc.ankr.com/eth");
-    var ERC20Address = "0x84eC111c281ac24faAe80dB463905f2E0E501eFf";
-    var dataAddress = "0xf5D0cdb0C3Be19478445c29D3aB4830ce10E3A45";
-    var adminAddress = "0x0Be903b8eDD79ee3319302AdaF9677995f66e1a1";
+    var ERC20Address = "0x074324E5D1fE568Bf3eecCAAC644c53969A8A588";
+    var dataAddress = "0x867D39eDb7cD03b877D27c328936B9f65b54cD28";
+    var adminAddress = "0x95cdbde4338F834330Dd28E363977aE6ab662eb6";
     var eContract = "";
     var dContract = "";
     var aContract = "";
@@ -136,7 +136,7 @@
         text += "ETH Balance(used for gas): " + displayDecimals(18, ethBalance) + "<br>";
         const totalvotes = DOMPurify.sanitize(await aContract.methods.totalVotes().call());
         text += "Total votes(consensus): " + totalvotes + "<br>";
-        const threshold = DOMPurify.sanitize(await aContract.methods.totalVotes().call());
+        const threshold = DOMPurify.sanitize(await aContract.methods.voteThreshold().call());
         text += "Vote Threshold: " + threshold + "%<br>";
         votetime = DOMPurify.sanitize(await aContract.methods.voteTimeLimit().call());
         text += "Proposal expiration time limit: " + (votetime / 60 / 60).toFixed(0) + " hours<br>";
