@@ -67,9 +67,9 @@ DataABI = [
 				"type": "address"
 			},
 			{
-				"internalType": "uint256",
+				"internalType": "uint8",
 				"name": "_type",
-				"type": "uint256"
+				"type": "uint8"
 			}
 		],
 		"name": "approve",
@@ -144,9 +144,9 @@ DataABI = [
 				"type": "address"
 			},
 			{
-				"internalType": "uint256",
+				"internalType": "uint8",
 				"name": "_type",
-				"type": "uint256"
+				"type": "uint8"
 			}
 		],
 		"name": "decreaseAllowance",
@@ -178,9 +178,9 @@ DataABI = [
 				"type": "address"
 			},
 			{
-				"internalType": "uint256",
+				"internalType": "uint8",
 				"name": "_type",
-				"type": "uint256"
+				"type": "uint8"
 			}
 		],
 		"name": "increaseAllowance",
@@ -364,9 +364,9 @@ DataABI = [
 		"name": "allowance",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint80",
 				"name": "",
-				"type": "uint256"
+				"type": "uint80"
 			}
 		],
 		"stateMutability": "view",
@@ -436,9 +436,9 @@ DataABI = [
 		"name": "auditAmounts",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint80",
 				"name": "",
-				"type": "uint256"
+				"type": "uint80"
 			}
 		],
 		"stateMutability": "view",
@@ -460,9 +460,9 @@ DataABI = [
 		"name": "auditAmounts2",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint80",
 				"name": "",
-				"type": "uint256"
+				"type": "uint80"
 			}
 		],
 		"stateMutability": "view",
@@ -516,9 +516,9 @@ DataABI = [
 		"name": "balanceOfUser",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint80",
 				"name": "",
-				"type": "uint256"
+				"type": "uint80"
 			}
 		],
 		"stateMutability": "view",
@@ -529,9 +529,9 @@ DataABI = [
 		"name": "decimals",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint8",
 				"name": "",
-				"type": "uint256"
+				"type": "uint8"
 			}
 		],
 		"stateMutability": "view",
@@ -540,9 +540,9 @@ DataABI = [
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint8",
 				"name": "which",
-				"type": "uint256"
+				"type": "uint8"
 			},
 			{
 				"internalType": "uint256",
@@ -682,9 +682,9 @@ DataABI = [
 		"name": "totalSupply",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint80",
 				"name": "",
-				"type": "uint256"
+				"type": "uint80"
 			}
 		],
 		"stateMutability": "view",

@@ -2,9 +2,9 @@
 pragma solidity = 0.8.4;
 
 interface TSHDATA {
-    function totalSupply() external view returns (uint256);
+    function totalSupply() external view returns (uint80);
     function balanceOf(address account, address m_sender) external view returns (uint256);
-    function allowance(address owner, address spender) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint80);
     function increaseAllowance(address spender, uint256 value, address m_sender, uint8 _type) external returns (bool);
     function decreaseAllowance(address spender, uint256 value, address m_sender, uint8 _type) external returns (bool);
     function sendLiquid(address from, address to, uint256 amount, address m_sender) external returns (bool);
@@ -43,10 +43,9 @@ contract TSH {
     }
     
     function safeConvert(uint256 data) internal pure returns (uint80) {
-        if(data == type(uint256).max) {
+        if(data > type(uint80).max) {
             data = type(uint80).max;
         }
-        require(data <= type(uint80).max, "Overflow error");
         return uint80(data);
     }
     function changeMinter(address newminter) external returns (bool) {
@@ -89,8 +88,8 @@ contract TSH {
             isUser[to] = true;
             users.push(to);
         }
-        if(block.timestamp + 604800 > lastTimestamp) {
-            lastTimestamp = block.timestamp;
+        if(block.timestamp > lastTimestamp) {
+            lastTimestamp = block.timestamp + 604800;
             auditnonce += 1;
             nonceTime[auditnonce] = block.timestamp;
         }
@@ -106,8 +105,8 @@ contract TSH {
         require (paused < block.timestamp);
         require (from == minter);
         uint80 newvalue = safeConvert(value);
-        if(block.timestamp + 604800 > lastTimestamp) {
-            lastTimestamp = block.timestamp;
+        if(block.timestamp > lastTimestamp) {
+            lastTimestamp = block.timestamp + 604800;
             auditnonce += 1;
             nonceTime[auditnonce] = block.timestamp;
         }

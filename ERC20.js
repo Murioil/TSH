@@ -90,54 +90,6 @@ ERC20ABI = [
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "decreaseAllowance",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "increaseAllowance",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
 				"name": "holder",
 				"type": "address"
 			},
@@ -148,6 +100,11 @@ ERC20ABI = [
 			},
 			{
 				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
 				"name": "nonce",
 				"type": "uint256"
 			},
@@ -155,11 +112,6 @@ ERC20ABI = [
 				"internalType": "uint256",
 				"name": "expiry",
 				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "allowed",
-				"type": "bool"
 			},
 			{
 				"internalType": "uint8",
@@ -307,9 +259,9 @@ ERC20ABI = [
 		"name": "decimals",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint8",
 				"name": "",
-				"type": "uint256"
+				"type": "uint8"
 			}
 		],
 		"stateMutability": "view",

@@ -97,7 +97,7 @@ contract CTSH is TSH {
         require(spender != address(0));
         bool success;
         bytes memory result;
-        (success, result) = proxy.call(abi.encodeWithSignature("approve(address,uint256,address,uint256)",spender,value,msg.sender,0));
+        (success, result) = proxy.call(abi.encodeWithSignature("approve(address,uint256,address,uint8)",spender,value,msg.sender,0));
         require(success);
         emit Approval(msg.sender, spender, value);
         return true;
@@ -130,7 +130,7 @@ contract CTSH is TSH {
         uint wad = value;        
         bool success;
         bytes memory result;
-        (success, result) = proxy.call(abi.encodeWithSignature("approve(address,uint256,address,uint256)",spender,wad,holder,0));
+        (success, result) = proxy.call(abi.encodeWithSignature("approve(address,uint256,address,uint8)",spender,wad,holder,0));
         require(success);
         emit Approval(holder, spender, wad);
     }
