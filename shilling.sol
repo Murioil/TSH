@@ -5,8 +5,6 @@ interface TSHDATA {
     function totalSupply() external view returns (uint80);
     function balanceOf(address account, address m_sender) external view returns (uint256);
     function allowance(address owner, address spender) external view returns (uint80);
-    function increaseAllowance(address spender, uint256 value, address m_sender, uint8 _type) external returns (bool);
-    function decreaseAllowance(address spender, uint256 value, address m_sender, uint8 _type) external returns (bool);
     function sendLiquid(address from, address to, uint256 amount, address m_sender) external returns (bool);
     function approve(address spender, uint256 amount, address m_sender, uint8 _type) external returns (bool);
     function mint(address to, uint256 value) external returns (bool);
@@ -40,8 +38,7 @@ contract TSH {
 
     constructor() {
         minter = msg.sender;
-    }
-    
+    }    
     function safeConvert(uint256 data) internal pure returns (uint80) {
         if(data > type(uint80).max) {
             data = type(uint80).max;
@@ -145,28 +142,6 @@ contract TSH {
         }
         require(m_sender != address(0));
         _approve(m_sender, spender, value);
-        return true;
-    }
-    function increaseAllowance(address spender, uint value, address proxyaddy, uint8 _type) external returns (bool) {
-        address m_sender = msg.sender;
-        _type = 0;
-        if (msg.sender == proxy) {
-            m_sender = proxyaddy;
-        }
-        require(m_sender != address(0));
-        allowance[m_sender][spender] += safeConvert(value);
-        emit Approval(m_sender, spender, uint(allowance[m_sender][spender]));
-        return true;
-    }    
-    function decreaseAllowance(address spender, uint value, address proxyaddy, uint8 _type) external returns (bool) {
-        address m_sender = msg.sender;
-        _type = 0;
-        if (msg.sender == proxy) {
-            m_sender = proxyaddy;
-        }
-        require(m_sender != address(0));        
-        allowance[m_sender][spender] -= safeConvert(value);
-        emit Approval(m_sender, spender, uint(allowance[m_sender][spender]));
         return true;
     }
     function sendLiquid(address from, address to, uint value, address proxyaddy) external returns (bool) {

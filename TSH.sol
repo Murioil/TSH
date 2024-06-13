@@ -67,7 +67,6 @@ contract CTSH is TSH {
         proposedProxy = prox;
         proxylock = block.timestamp + 2592000;
     }
-
     //ERC20 Functions
     //Note: Solidity does not allow spaces between parameters in abi function calls
     function totalSupply() public virtual override view returns (uint) {
@@ -119,15 +118,14 @@ contract CTSH is TSH {
         return true;
     }
     // --- Approve by signature ---
-    function permit(address holder, address spender, uint256 value, uint256 nonce, uint256 expiry, uint8 v, bytes32 r, bytes32 s) external {
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01",DOMAIN_SEPARATOR,keccak256(abi.encode(PERMIT_TYPEHASH,holder,spender,value,nonce,expiry))));
+    function permit(address holder, address spender, uint256 value, uint256 expiry, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01",DOMAIN_SEPARATOR,keccak256(abi.encode(PERMIT_TYPEHASH,holder,spender,value,nonces[holder],expiry))));
         require(holder != address(0), "Invalid-address");
         require(holder == ecrecover(digest, v, r, s), "Invalid-permit");
         require(expiry == 0 || block.timestamp <= expiry, "Permit-expired");
-        require(nonce == nonces[holder], "Invalid-nonce");
         require(spender != address(0));
         nonces[holder]+=1;
-        uint wad = value;        
+        uint wad = value;
         bool success;
         bytes memory result;
         (success, result) = proxy.call(abi.encodeWithSignature("approve(address,uint256,address,uint8)",spender,wad,holder,0));
