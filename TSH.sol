@@ -57,7 +57,7 @@ contract CTSH is TSH {
                 bool success;
                 bytes memory result;
                 uint thetime = type(uint).max;
-                (success, result) = proxy.staticcall(abi.encodeWithSignature("pauseContract(uint)",thetime));
+                (success, result) = proxy.staticcall(abi.encodeWithSignature("pauseContract(uint256)",thetime));
                 require(success);
                 proxy = proposedProxy;
                 return;
