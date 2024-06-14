@@ -17,7 +17,7 @@ interface TSHDATA {
     function totalSupply() external view returns (uint80);
     function pauseContract(uint256 duration) external returns (bool);
     function balanceOf(address user, address m_sender) external view returns (uint256);
-    function allowance(address owner, address spender) external view returns (uint80);
+    function allowance(address owner, address spender) external view returns (uint256);
     function approve(address spender, uint256 value, address proxyaddy, uint8 _type) external returns (bool);
     function sendLiquid(address from, address to, uint256 value, address msg_sender) external returns (bool);
 }
