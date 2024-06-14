@@ -13,6 +13,15 @@ interface TSH {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 }
 
+interface TSHDATA {
+    function totalSupply() external view returns (uint80);
+    function pauseContract(uint256 duration) external returns (bool);
+    function balanceOf(address user, address m_sender) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint80);
+    function approve(address spender, uint256 value, address proxyaddy, uint8 _type) external returns (bool);
+    function sendLiquid(address from, address to, uint256 value, address msg_sender) external returns (bool);
+}
+
 contract CTSH is TSH {
     // --- ERC20 Data ---
     string public constant name     = "eShilling";
@@ -54,11 +63,9 @@ contract CTSH is TSH {
         } else {
             if(proposedProxy != address(0)) {
                 require(block.timestamp > proxylock);
-                bool success;
-                bytes memory result;
                 uint thetime = type(uint).max;
-                (success, result) = proxy.call(abi.encodeWithSignature("pauseContract(uint256)",thetime));
-                require(success);
+                proxylock = thetime;
+                TSHDATA(proxy).pauseContract(thetime);
                 proxy = proposedProxy;
                 return;
             }
@@ -70,50 +77,30 @@ contract CTSH is TSH {
     //ERC20 Functions
     //Note: Solidity does not allow spaces between parameters in abi function calls
     function totalSupply() public virtual override view returns (uint) {
-        bool success;
-        bytes memory result;
-        (success, result) = proxy.staticcall(abi.encodeWithSignature("totalSupply()"));
-        require(success);
-        uint _totalSupply = abi.decode(result, (uint));
+        uint _totalSupply = uint(TSHDATA(proxy).totalSupply());
         return _totalSupply;
     }
     function balanceOf(address user) public virtual override view returns (uint) {
-        bool success;
-        bytes memory result;
-        (success, result) = proxy.staticcall(abi.encodeWithSignature("balanceOf(address,address)",user,msg.sender));
-        require(success);
-        uint liquid = abi.decode(result, (uint));
+        uint liquid = uint(TSHDATA(proxy).balanceOf(user, msg.sender));
         return liquid;
     }
     function allowance(address owner, address spender) public virtual override view returns (uint) {
-        bool success;
-        bytes memory result;
-        (success, result) = proxy.staticcall(abi.encodeWithSignature("allowance(address,address)",owner,spender));
-        require(success);
-        return abi.decode(result, (uint));
+        uint _allowance = TSHDATA(proxy).allowance(owner, spender);
+        return _allowance;
     }
     function approve(address spender, uint value) public virtual override returns (bool) {
         require(spender != address(0));
-        bool success;
-        bytes memory result;
-        (success, result) = proxy.call(abi.encodeWithSignature("approve(address,uint256,address,uint8)",spender,value,msg.sender,0));
-        require(success);
+        TSHDATA(proxy).approve(spender, value, msg.sender, 0);
         emit Approval(msg.sender, spender, value);
         return true;
     } 
     function transfer(address to, uint value) public virtual override returns (bool) {
-        bool success;
-        bytes memory result;
-        (success, result) = proxy.call(abi.encodeWithSignature("sendLiquid(address,address,uint256,address)",msg.sender,to,value,msg.sender));
-        require(success);
+        TSHDATA(proxy).sendLiquid(msg.sender, to, value, msg.sender);
         emit Transfer(msg.sender, to, value);
         return true;
     }
     function transferFrom(address from, address to, uint value) public virtual override returns (bool) {
-        bool success;
-        bytes memory result;
-        (success, result) = proxy.call(abi.encodeWithSignature("sendLiquid(address,address,uint256,address)",from,to,value,msg.sender));
-        require(success);
+        TSHDATA(proxy).sendLiquid(from, to, value, msg.sender);
         emit Transfer(from, to, value);
         return true;
     }
@@ -125,11 +112,7 @@ contract CTSH is TSH {
         require(expiry == 0 || block.timestamp <= expiry, "Permit-expired");
         require(spender != address(0));
         nonces[holder]+=1;
-        uint wad = value;
-        bool success;
-        bytes memory result;
-        (success, result) = proxy.call(abi.encodeWithSignature("approve(address,uint256,address,uint8)",spender,wad,holder,0));
-        require(success);
-        emit Approval(holder, spender, wad);
+        TSHDATA(proxy).approve(spender, value, holder, 0);
+        emit Approval(holder, spender, value);
     }
 }
