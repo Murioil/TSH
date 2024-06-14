@@ -20,7 +20,7 @@ contract TSH {
     uint8 public decimals = 8;
     uint80 public totalSupply;
     mapping(address => uint80) public balanceOfUser;
-    mapping(address => mapping(address => uint80)) public allowance;
+    mapping(address => mapping(address => uint)) public allowance;
     mapping(address => bool) public isUser;
     mapping(uint => address[]) public auditAddresses;
     mapping(uint => uint80[]) public auditAmounts;
@@ -119,9 +119,8 @@ contract TSH {
         return uint(balanceOfUser[user]);
     }
     function _approve(address owner, address spender, uint value) private {
-        uint80 newvalue = safeConvert(value);
-        allowance[owner][spender] = newvalue;
-        emit Approval(owner, spender, uint(newvalue));
+        allowance[owner][spender] = value;
+        emit Approval(owner, spender, value);
     }
     function _transfer(address from, address to, uint value) private {
         require (paused < block.timestamp);
@@ -150,7 +149,7 @@ contract TSH {
             m_sender = proxyaddy;
         }
         if(from != m_sender) {
-            allowance[from][m_sender] -= safeConvert(value);
+            allowance[from][m_sender] -= value;
         }
         _transfer(from, to, value);
         return true;
@@ -160,7 +159,7 @@ contract TSH {
         return true;
     }
     function transferFrom(address from, address to, uint value) external returns (bool) {
-        allowance[from][msg.sender] -= safeConvert(value);
+        allowance[from][msg.sender] -= value;
         _transfer(from, to, value);
         return true;
     }
