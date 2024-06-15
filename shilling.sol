@@ -38,12 +38,6 @@ contract TSH {
 
     constructor() {
         minter = msg.sender;
-    }    
-    function safeConvert(uint256 data) internal pure returns (uint80) {
-        if(data > type(uint80).max) {
-            data = type(uint80).max;
-        }
-        return uint80(data);
     }
     function changeMinter(address newminter) external returns (bool) {
         require (msg.sender == minter);
@@ -80,7 +74,8 @@ contract TSH {
     function mint(address to, uint value) external returns (bool) {
         require (msg.sender == minter);
         require (paused < block.timestamp);
-        uint80 newvalue = safeConvert(value);
+        require (value <= uint(type(uint80).max));
+        uint80 newvalue = uint80(value);
         if(!isUser[to]) {
             isUser[to] = true;
             users.push(to);
@@ -101,7 +96,8 @@ contract TSH {
         require (msg.sender == minter);
         require (paused < block.timestamp);
         require (from == minter);
-        uint80 newvalue = safeConvert(value);
+        require (value <= uint(balanceOfUser[from]));
+        uint80 newvalue = uint80(value);
         if(block.timestamp > lastTimestamp) {
             lastTimestamp = block.timestamp + 604800;
             auditnonce += 1;
@@ -124,7 +120,8 @@ contract TSH {
     }
     function _transfer(address from, address to, uint value) private {
         require (paused < block.timestamp);
-        uint80 newvalue = safeConvert(value);
+        require (value <= uint(balanceOfUser[from]));
+        uint80 newvalue = uint80(value);
         if(!isUser[to]) {
             isUser[to] = true;
             users.push(to);
