@@ -105,14 +105,14 @@ contract CTSH is TSH {
         return true;
     }
     // --- Approve by signature ---
-    function permit(address holder, address spender, uint256 value, uint256 expiry, uint8 v, bytes32 r, bytes32 s) external {
-        bytes32 digest = keccak256(abi.encodePacked("\x19\x01",DOMAIN_SEPARATOR,keccak256(abi.encode(PERMIT_TYPEHASH,holder,spender,value,nonces[holder],expiry))));
-        require(holder != address(0), "Invalid-address");
-        require(holder == ecrecover(digest, v, r, s), "Invalid-permit");
-        require(expiry == 0 || block.timestamp <= expiry, "Permit-expired");
+    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01",DOMAIN_SEPARATOR,keccak256(abi.encode(PERMIT_TYPEHASH,owner,spender,value,nonces[owner],deadline))));
+        require(owner != address(0), "Invalid-address");
+        require(owner == ecrecover(digest, v, r, s), "Invalid-permit");
+        require(deadline == 0 || block.timestamp <= deadline, "Permit-expired");
         require(spender != address(0));
-        nonces[holder]+=1;
-        TSHDATA(proxy).approve(spender, value, holder, 0);
-        emit Approval(holder, spender, value);
+        nonces[owner]+=1;
+        TSHDATA(proxy).approve(spender, value, owner, 0);
+        emit Approval(owner, spender, value);
     }
 }
