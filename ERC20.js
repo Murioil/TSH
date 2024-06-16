@@ -90,7 +90,7 @@ ERC20ABI = [
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "holder",
+				"name": "owner",
 				"type": "address"
 			},
 			{
@@ -105,12 +105,7 @@ ERC20ABI = [
 			},
 			{
 				"internalType": "uint256",
-				"name": "nonce",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "expiry",
+				"name": "deadline",
 				"type": "uint256"
 			},
 			{

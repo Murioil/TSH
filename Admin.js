@@ -1,36 +1,5 @@
 AdminABI = [
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_proxyContract",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_voteThreshold",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_voteTimeLimit",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "weight",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_maxWeight",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -90,6 +59,63 @@ AdminABI = [
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "iterations",
+				"type": "uint256"
+			}
+		],
+		"name": "updateList",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "hash",
+				"type": "bytes32"
+			}
+		],
+		"name": "voteProposal",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_proxyContract",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_voteThreshold",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_voteTimeLimit",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "weight",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_maxWeight",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
 	},
 	{
 		"inputs": [
@@ -391,19 +417,6 @@ AdminABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "iterations",
-				"type": "uint256"
-			}
-		],
-		"name": "updateList",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "version",
 		"outputs": [
@@ -414,19 +427,6 @@ AdminABI = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "hash",
-				"type": "bytes32"
-			}
-		],
-		"name": "voteProposal",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{

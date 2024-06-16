@@ -130,74 +130,6 @@ DataABI = [
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "proxyaddy",
-				"type": "address"
-			},
-			{
-				"internalType": "uint8",
-				"name": "_type",
-				"type": "uint8"
-			}
-		],
-		"name": "decreaseAllowance",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "proxyaddy",
-				"type": "address"
-			},
-			{
-				"internalType": "uint8",
-				"name": "_type",
-				"type": "uint8"
-			}
-		],
-		"name": "increaseAllowance",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
 				"name": "to",
 				"type": "address"
 			},
@@ -364,9 +296,9 @@ DataABI = [
 		"name": "allowance",
 		"outputs": [
 			{
-				"internalType": "uint80",
+				"internalType": "uint256",
 				"name": "",
-				"type": "uint80"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
