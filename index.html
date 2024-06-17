@@ -99,7 +99,7 @@
       gasPrice = null;
       var ethBalance = 0;
       if (currentChainId == 137) {
-        text += "Connected to Ethereum Testnet<br>";
+        text += "Connected to Polygon<br>";
         text += "Please add: " + ERC20Address + " to your Metamask so you can detect when you receive minted TSH<br>";
         eContract = new web3.eth.Contract(ERC20ABI, ERC20Address);
         dContract = new web3.eth.Contract(DataABI, dataAddress);
@@ -133,7 +133,7 @@
         totalsupply = DOMPurify.sanitize(await eContract.methods.totalSupply().call());
         text += "TSH Balance: " + displayDecimals(decimals, mybalance) + "<br>";
         text += "Total TSH in circulation: " + displayDecimals(decimals, totalsupply) + "<br>";
-        text += "ETH Balance(used for gas): " + displayDecimals(18, ethBalance) + "<br>";
+        text += "Polygon Balance(used for gas): " + displayDecimals(18, ethBalance) + "<br>";
         const totalvotes = DOMPurify.sanitize(await aContract.methods.totalVotes().call());
         text += "Total votes(consensus): " + totalvotes + "<br>";
         const threshold = DOMPurify.sanitize(await aContract.methods.voteThreshold().call());
