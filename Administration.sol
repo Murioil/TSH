@@ -25,7 +25,7 @@ contract Administration {
     mapping(address => bool) public isCurator;
     mapping(address => uint256) public myWeight;
     mapping(bytes32 => uint256) public proposalIndex; // map proposal hash to index in proposals array
-    mapping(bytes32 => mapping(address => bool)) public hasVoted;    
+    mapping(bytes32 => mapping(address => bool)) public hasVoted;
     uint256 public totalVotes;
     uint256 public voteThreshold; // threshold in percentage
     uint256 public voteTimeLimit; // time limit for voting in seconds
