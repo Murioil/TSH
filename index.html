@@ -184,7 +184,7 @@
           for (let index = startingIndex; index < mylen; index++) { // Assuming we have 5 proposals
               const proposal = await aContract.methods.getProposal(index).call();
               var ptype = DOMPurify.sanitize(proposal[3]);
-              var value = displayDecimals(decimals, DOMPurify.sanitize(proposal[2]));
+              var value = DOMPurify.sanitize(proposal[2]);
               const currentBlockNumber = await web3.eth.getBlockNumber();
               const currentBlock = await web3.eth.getBlock(currentBlockNumber);
               const blockTimestamp = DOMPurify.sanitize(currentBlock.timestamp);
@@ -206,7 +206,7 @@
                     <p>Type: ${ptype}</p>
                     <p>Proposer: ${DOMPurify.sanitize(proposal[0])}</p><br>
                     <p>Recipient: ${DOMPurify.sanitize(proposal[1])}</p>
-                    <p>Amount: ${value}</p>                    
+                    <p>Amount: ${displayDecimals(decimals, value)}</p>                    
                     <p>Time remaining before expiration: ${timeremaining} hours</p>
                     <p>Weight/Votes on proposal: ${DOMPurify.sanitize(proposal[5])}</p>
                     <p>Hash: ${DOMPurify.sanitize(proposal[6])}</p>
@@ -220,7 +220,7 @@
                     <p>Type: ${ptype}</p>
                     <p>Proposer: ${DOMPurify.sanitize(proposal[0])}</p><br>
                     <p>Funds burned from admin account.</p>
-                    <p>Amount: ${value}</p>                    
+                    <p>Amount: ${displayDecimals(decimals, value)}</p>                    
                     <p>Time remaining before expiration: ${timeremaining} hours</p>
                     <p>Weight/Votes on proposal: ${DOMPurify.sanitize(proposal[5])}</p>
                     <p>Hash: ${DOMPurify.sanitize(proposal[6])}</p>
